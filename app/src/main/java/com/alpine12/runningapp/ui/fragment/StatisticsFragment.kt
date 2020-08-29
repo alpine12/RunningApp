@@ -7,7 +7,7 @@ import com.alpine12.runningapp.ui.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class StatisticsFragment : Fragment(R.layout.fragment_run) {
+class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
 
     private val viewModel: MainViewModel by viewModels()
 }
