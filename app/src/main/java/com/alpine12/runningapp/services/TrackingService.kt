@@ -24,6 +24,7 @@ import com.alpine12.runningapp.other.Constant.LOCATION_UPDATE_INTERVAL
 import com.alpine12.runningapp.other.Constant.NOTIFICATION_CHANEL_ID
 import com.alpine12.runningapp.other.Constant.NOTIFICATION_CHANEL_NAME
 import com.alpine12.runningapp.other.Constant.NOTIFICATION_CHANNEL_ID
+import com.alpine12.runningapp.other.Constant.TIMER_UPDATE_INTERVAL
 import com.alpine12.runningapp.other.TrackingUtility
 import com.alpine12.runningapp.ui.MainActivity
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -32,6 +33,10 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 typealias Polyline = MutableList<LatLng>
@@ -43,7 +48,10 @@ class TrackingService : LifecycleService() {
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
+    private val timeRunInSeconds = MutableLiveData<Long>()
+
     companion object {
+        val timeRunInMillis = MutableLiveData<Long>()
         val isTracking = MutableLiveData<Boolean>()
         val pathPoints = MutableLiveData<Polylines>()
     }
@@ -51,6 +59,8 @@ class TrackingService : LifecycleService() {
     private fun postInitialValues() {
         isTracking.postValue(false)
         pathPoints.postValue(mutableListOf())
+        timeRunInSeconds.postValue(0L)
+        timeRunInMillis.postValue(0L)
     }
 
     override fun onCreate() {
@@ -72,7 +82,7 @@ class TrackingService : LifecycleService() {
                         isFirstRun = false
                     } else {
                         Timber.d("Resuming Service . . . ")
-                        startForeGroundService()
+                        startTimer()
                     }
                 }
 
@@ -89,9 +99,38 @@ class TrackingService : LifecycleService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    private var isTimerEnable = false
+    private var lapTime = 0L
+    private var timeRun = 0L
+    private var timeStarted = 0L
+    private var lastSecondTimeStamp = 0L
 
-    private fun pasueService(){
+    private fun startTimer() {
+        addEmptyPolyline()
+        isTracking.postValue(true)
+        timeStarted = System.currentTimeMillis()
+        isTimerEnable = true
+
+        CoroutineScope(Dispatchers.Main).launch {
+            while (isTracking.value!!){
+                lapTime = System.currentTimeMillis() - timeStarted
+
+                timeRunInMillis.postValue(timeRun + lapTime)
+                if (timeRunInMillis.value!! >= lastSecondTimeStamp + 1000L){
+                    timeRunInSeconds.postValue(timeRunInSeconds.value!! + 1)
+                    lastSecondTimeStamp += 1000L
+                }
+
+                delay(TIMER_UPDATE_INTERVAL)
+
+                timeRun += lapTime
+            }
+        }
+    }
+
+    private fun pasueService() {
         isTracking.postValue(false)
+        isTimerEnable = false
     }
 
     @SuppressLint("MissingPermission")
@@ -109,7 +148,7 @@ class TrackingService : LifecycleService() {
                     Looper.getMainLooper()
                 )
             }
-        }else{
+        } else {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         }
     }
@@ -146,7 +185,7 @@ class TrackingService : LifecycleService() {
 
     private fun startForeGroundService() {
 
-        addEmptyPolyline()
+        startTimer()
         isTracking.postValue(true)
 
         val notificationManager =
