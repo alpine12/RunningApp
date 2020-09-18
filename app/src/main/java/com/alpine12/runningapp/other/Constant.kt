@@ -24,5 +24,5 @@ object Constant {
 
     const val NOTIFICATION_CHANNEL_ID = "tracking_chanel"
     const val NOTIFICATION_CHANEL_NAME = "Tracking"
-    const val NOTIFICATION_CHANEL_ID = 1001
+    const val NOTIFICATION_ID = 1001
 }
