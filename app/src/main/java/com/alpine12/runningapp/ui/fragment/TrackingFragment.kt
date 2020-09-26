@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.alpine12.runningapp.R
+import com.alpine12.runningapp.adapters.RunAdapter
 import com.alpine12.runningapp.db.Run
 import com.alpine12.runningapp.other.Constant.ACTION_PAUSE_SERVICE
 import com.alpine12.runningapp.other.Constant.ACTION_START_OR_RESUME_SERVICE
@@ -46,7 +47,7 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
     private var menu: Menu? = null
 
     private var weight = 80f
-//    private var
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
