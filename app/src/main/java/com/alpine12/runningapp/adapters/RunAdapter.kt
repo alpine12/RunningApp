@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.item_run.view.tvAvgSpeed
 import kotlinx.android.synthetic.main.item_run.view.tvDate
 import kotlinx.android.synthetic.main.item_run.view.tvDistance
 import kotlinx.android.synthetic.main.marker_view.view.*
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -52,8 +53,10 @@ class RunAdapter : RecyclerView.Adapter<RunAdapter.RunViewHolder>() {
                 .load(run.img)
                 .into(ivRunImage)
 
+            Timber.d("time ${run.timeInMillis}")
+
             val calendar = Calendar.getInstance().apply {
-                timeInMillis = run.timeInMillis
+                timeInMillis = run.timestamp
             }
 
             val dateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())

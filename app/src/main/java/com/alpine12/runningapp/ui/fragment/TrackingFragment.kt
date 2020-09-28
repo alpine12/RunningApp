@@ -8,7 +8,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.alpine12.runningapp.R
-import com.alpine12.runningapp.adapters.RunAdapter
 import com.alpine12.runningapp.db.Run
 import com.alpine12.runningapp.other.Constant.ACTION_PAUSE_SERVICE
 import com.alpine12.runningapp.other.Constant.ACTION_START_OR_RESUME_SERVICE
@@ -30,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_tracking.*
 import timber.log.Timber
 import java.util.*
+import javax.inject.Inject
 import kotlin.math.round
 
 @AndroidEntryPoint
@@ -46,7 +46,8 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
 
     private var menu: Menu? = null
 
-    private var weight = 80f
+    @set:Inject
+    var weight = 80f
 
 
     override fun onCreateView(
@@ -192,6 +193,7 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
     }
 
     private fun endRunAndSaeToDb() {
+
         map?.snapshot { bmp ->
             var distanceInMeters = 0f
             for (polyline in pathPoints) {
@@ -199,16 +201,19 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
             }
             val avgSpeed =
                 round((distanceInMeters / 1000f) / (currentTimeMillis / 1000f / 60 / 60) * 10) / 10f
-            val dateTImeStamp = Calendar.getInstance().timeInMillis
+            val dateTimeStamp = Calendar.getInstance().timeInMillis
             val caloriesBurned = ((distanceInMeters / 1000f) * weight).toInt()
             val run = Run(
                 bmp,
-                dateTImeStamp,
+                dateTimeStamp,
                 avgSpeed,
                 distanceInMeters,
                 currentTimeMillis,
                 caloriesBurned
             )
+
+            Timber.d("time $dateTimeStamp")
+
             viewModel.insertRun(run)
             Snackbar.make(
                 requireActivity().findViewById(R.id.rootView),
