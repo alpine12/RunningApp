@@ -56,8 +56,8 @@ class RunAdapter : RecyclerView.Adapter<RunAdapter.RunViewHolder>() {
             Timber.d("time ${run.timeInMillis}")
 
             val calendar = Calendar.getInstance().apply {
-                timeInMillis = run.timestamp
-            }
+            timeInMillis = run.timestamp
+        }
 
             val dateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
             tvDate.text = dateFormat.format(calendar.time)
